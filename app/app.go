@@ -23,15 +23,15 @@ type App struct {
 }
 
 // ConfigAndRunApp will create and initialize App structure. App factory function.
-func ConfigAndRunApp(config *config.Config) {
+func ConfigAndRunApp(config config.GeneralConfig) {
 	app := new(App)
 	app.Initialize(config)
 	app.Run(config.ServerHost)
 }
 
 // Initialize initialize the app with
-func (app *App) Initialize(config *config.Config) {
-	app.DB = db.InitialConnection(config.Db.Name, config.Db.Endpoint)
+func (app *App) Initialize(config config.GeneralConfig) {
+	app.DB = db.InitialConnection(config.Mongo.Name, config.Mongo.Endpoint)
 	// app.createIndexes()
 
 	app.Router = mux.NewRouter()

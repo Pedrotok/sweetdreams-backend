@@ -1,0 +1,9 @@
+{
+  "Mongo": {
+    "Username": "myuser",
+    "Password": "password",
+    "Endpoint": "mongodb://localhost:27017",
+    "Name": "SweetDreamsDB"
+  },
+  "ServerHost": "localhost:8080"
+}
