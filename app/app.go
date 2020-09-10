@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 	"golang.org/x/net/context"
 
 	"SweetDreams/config"
@@ -25,18 +26,26 @@ type App struct {
 // ConfigAndRunApp will create and initialize App structure. App factory function.
 func ConfigAndRunApp(config config.GeneralConfig) {
 	app := new(App)
-	app.Initialize(config)
+	app.initialize(config)
 	app.Run(config.ServerHost)
 }
 
 // Initialize initialize the app with
-func (app *App) Initialize(config config.GeneralConfig) {
+func (app *App) initialize(config config.GeneralConfig) {
 	app.DB = db.InitialConnection(config.Mongo.Name, config.Mongo.Endpoint)
-	// app.createIndexes()
+	app.createIndexes()
 
 	app.Router = mux.NewRouter()
 	app.UseMiddleware(controller.JSONContentTypeMiddleware)
 	app.setRouters()
+}
+
+func (app *App) createIndexes() {
+	keys := bsonx.Doc{
+		{Key: "email", Value: bsonx.Int32(1)},
+	}
+	users := app.DB.Collection("User")
+	db.SetIndexes(users, keys)
 }
 
 // SetupRouters will register routes in router
@@ -44,7 +53,7 @@ func (app *App) setRouters() {
 	app.post("/product", app.handleRequest(controller.CreateProduct))
 	app.put("/product", app.handleRequest(controller.UpdateProduct))
 	app.get("/product/{id}", app.handleRequest(controller.GetProduct))
-	//app.delete("/product", app.handleRequest(product.Delete))
+	//app.delete("/product", app.handleRequest(controller.DeleteProduct))
 	app.get("/product", app.handleRequest(controller.GetAllProducts), "page", "{page}")
 
 	app.post("/user/authenticate", app.handleRequest(controller.Authenticate))
