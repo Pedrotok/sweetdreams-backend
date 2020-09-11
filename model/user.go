@@ -2,9 +2,8 @@ package model
 
 import (
 	"context"
-	"errors"
-	"log"
 
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,12 +19,12 @@ type User struct {
 func CreateUser(email string, password string, db *mongo.Database) (*User, error) {
 	err := validatePassword(password)
 	if err != nil {
-		return nil, errors.New("password not valid")
+		return nil, errors.Wrap(err, "password not valid")
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, errors.New("password not acceptable")
+		return nil, errors.Wrap(err, "password not hashable")
 	}
 
 	user := new(User)
@@ -36,10 +35,9 @@ func CreateUser(email string, password string, db *mongo.Database) (*User, error
 	if err != nil {
 		switch err.(type) {
 		case mongo.WriteException:
-			log.Printf(err.Error())
-			return nil, errors.New("Error while inserting data")
+			return nil, errors.Wrap(err, "Error while inserting data")
 		default:
-			return nil, errors.New("Error")
+			return nil, errors.Wrap(err, "Error")
 		}
 	}
 	user.ID = result.InsertedID.(primitive.ObjectID)
@@ -49,13 +47,23 @@ func CreateUser(email string, password string, db *mongo.Database) (*User, error
 
 func AuthenticateUser(email string, password string, db *mongo.Database) (*User, error) {
 	user := new(User)
-	err := db.Collection("User").FindOne(context.TODO(), bson.D{{"email", email}}).Decode(user)
+	err := db.Collection("User").FindOne(context.TODO(), bson.D{{Key: "email", Value: email}}).Decode(user)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "User with email not found")
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Password not matching")
+	}
+
+	return user, nil
+}
+
+func SelectUserById(id primitive.ObjectID, db *mongo.Database) (*User, error) {
+	user := new(User)
+	err := db.Collection("User").FindOne(context.TODO(), bson.D{{Key: "_id", Value: id}}).Decode(user)
+	if err != nil {
+		return nil, errors.Wrap(err, "User not found")
 	}
 
 	return user, nil

@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/x/bsonx"
 	"golang.org/x/net/context"
 
+	middleware "SweetDreams/app/middleware"
 	"SweetDreams/config"
 	"SweetDreams/controller"
 	"SweetDreams/db"
@@ -30,13 +31,12 @@ func ConfigAndRunApp(config config.GeneralConfig) {
 	app.Run(config.ServerHost)
 }
 
-// Initialize initialize the app with
 func (app *App) initialize(config config.GeneralConfig) {
 	app.DB = db.InitialConnection(config.Mongo.Name, config.Mongo.Endpoint)
 	app.createIndexes()
 
 	app.Router = mux.NewRouter()
-	app.UseMiddleware(controller.JSONContentTypeMiddleware)
+	app.UseMiddleware(middleware.JSONContentTypeMiddleware)
 	app.setRouters()
 }
 
@@ -50,8 +50,9 @@ func (app *App) createIndexes() {
 
 // SetupRouters will register routes in router
 func (app *App) setRouters() {
-	app.post("/product", app.handleRequest(controller.CreateProduct))
-	app.put("/product", app.handleRequest(controller.UpdateProduct))
+
+	app.post("/product", middleware.AuthMiddleware(app.DB, app.handleRequest(controller.CreateProduct)))
+	app.put("/product", middleware.AuthMiddleware(app.DB, app.handleRequest(controller.UpdateProduct)))
 	app.get("/product/{id}", app.handleRequest(controller.GetProduct))
 	//app.delete("/product", app.handleRequest(controller.DeleteProduct))
 	app.get("/product", app.handleRequest(controller.GetAllProducts), "page", "{page}")
@@ -105,11 +106,20 @@ func (app *App) delete(path string, endpoint http.HandlerFunc, queries ...string
 // endregion RESTWrappers
 
 // RequestHandlerFunction is a custome type that help us to pass db arg to all endpoints
-type RequestHandlerFunction func(db *mongo.Database, w http.ResponseWriter, r *http.Request)
+type RequestHandlerFunction func(db *mongo.Database, w http.ResponseWriter, r *http.Request) error
 
 // handleRequest is a middleware we create for pass in db connection to endpoints.
 func (app *App) handleRequest(handler RequestHandlerFunction) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handler(app.DB, w, r)
+		if err := handler(app.DB, w, r); err != nil {
+			switch e := err.(type) {
+			case controller.StatusError:
+				log.Printf("HTTP %d - %s", e.Status(), e)
+				http.Error(w, e.Error(), e.Status())
+			default:
+				http.Error(w, http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError)
+			}
+		}
 	}
 }

@@ -7,44 +7,47 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RegisterUser(db *mongo.Database, res http.ResponseWriter, req *http.Request) {
+func RegisterUser(db *mongo.Database, res http.ResponseWriter, req *http.Request) error {
 	registerRequest := new(controller.RegisterRequest)
 	err := json.NewDecoder(req.Body).Decode(registerRequest)
 
 	if err != nil {
-		ResponseWriter(res, http.StatusBadRequest, "body json request have issues!!!", nil)
-		return
+		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Failed to decode request\n")}
 	}
 
 	_, err = model.CreateUser(registerRequest.Email, registerRequest.Password, db)
 
 	if err != nil {
-		ResponseWriter(res, http.StatusBadRequest, "password not acceptable", nil)
-		return
+		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Couldn't create user\n")}
 	}
 
-	ResponseWriter(res, http.StatusCreated, "User created", nil)
+	return ResponseWriter(res, http.StatusCreated, "User created", nil)
 }
 
-func Authenticate(db *mongo.Database, res http.ResponseWriter, req *http.Request) {
+func Authenticate(db *mongo.Database, res http.ResponseWriter, req *http.Request) error {
 	registerRequest := new(controller.RegisterRequest)
 	err := json.NewDecoder(req.Body).Decode(registerRequest)
 
 	if err != nil {
-		ResponseWriter(res, http.StatusNotAcceptable, "body json request have issues!!!", nil)
-		return
+		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Failed to decode request\n")}
 	}
 
 	user, err := model.AuthenticateUser(registerRequest.Email, registerRequest.Password, db)
 
 	if err != nil {
-		ResponseWriter(res, http.StatusOK, "user not found", nil)
+		return StatusError{http.StatusUnauthorized, errors.Wrap(err, "Couldn't authenticate user\n")}
 	}
 
 	token, err := util.GetToken(user.ID)
+
+	if err != nil {
+		return StatusError{http.StatusUnauthorized, errors.Wrap(err, "Couldn't authenticate user\n")}
+	}
+
 	res.Header().Set("Authorization", "Bearer "+token)
-	ResponseWriter(res, http.StatusOK, "", token)
+	return ResponseWriter(res, http.StatusOK, "", token)
 }
