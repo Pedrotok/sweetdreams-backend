@@ -23,7 +23,7 @@ func CreateProduct(db *mongo.Database, res http.ResponseWriter, req *http.Reques
 		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Failed to decode request")}
 	}
 
-	_, err = model.CreateProduct(request.Name, request.Price, request.Description, db)
+	_, err = model.CreateProduct(request.Name, request.Price, request.Description, request.ImageUrl, db)
 
 	if err != nil {
 		return err
@@ -53,6 +53,7 @@ func GetAllProducts(db *mongo.Database, res http.ResponseWriter, req *http.Reque
 	page, err := strconv.ParseInt(pageString, 10, 64)
 	if err != nil {
 		page = 0
+		limit = 1e9
 	}
 
 	productList, err := model.SelectProducts(page*limit, limit, db)

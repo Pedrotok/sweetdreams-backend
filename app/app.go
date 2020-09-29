@@ -55,6 +55,7 @@ func (app *App) setRouters() {
 	app.put("/product", middleware.AuthMiddleware(app.DB, app.handleRequest(controller.UpdateProduct)))
 	app.get("/product/{id}", app.handleRequest(controller.GetProduct))
 	//app.delete("/product", app.handleRequest(controller.DeleteProduct))
+	app.get("/product", app.handleRequest(controller.GetAllProducts))
 	app.get("/product", app.handleRequest(controller.GetAllProducts), "page", "{page}")
 
 	app.post("/user/authenticate", app.handleRequest(controller.Authenticate))

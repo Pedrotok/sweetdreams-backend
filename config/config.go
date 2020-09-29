@@ -10,4 +10,5 @@ type MongoConfig struct {
 type GeneralConfig struct {
 	Mongo      MongoConfig
 	ServerHost string
+	JwtKey     string
 }

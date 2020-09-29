@@ -16,13 +16,15 @@ type Product struct {
 	Name        string             `json:"name" bson:"name"`
 	Price       float64            `json:"price" bson:"price"`
 	Description string             `json:"description" bson:"description"`
+	ImageUrl    string             `json:"imageUrl" bson:"imageUrl"`
 }
 
-func CreateProduct(name string, price float64, description string, db *mongo.Database) (*Product, error) {
+func CreateProduct(name string, price float64, description string, imageUrl string, db *mongo.Database) (*Product, error) {
 	product := &Product{
 		Name:        name,
 		Price:       price,
 		Description: description,
+		ImageUrl:    imageUrl,
 	}
 
 	result, err := db.Collection("Product").InsertOne(context.TODO(), product)
@@ -40,18 +42,13 @@ func CreateProduct(name string, price float64, description string, db *mongo.Dat
 }
 
 func SelectProductById(id primitive.ObjectID, db *mongo.Database) (*Product, error) {
-	var product Product
-	err := db.Collection("Product").FindOne(context.TODO(), Product{ID: id}).Decode(&product)
+	product := new(Product)
+	err := db.Collection("Product").FindOne(context.TODO(), bson.D{{Key: "_id", Value: id}}).Decode(product)
 	if err != nil {
-		switch err {
-		case mongo.ErrNoDocuments:
-			return nil, errors.Wrap(err, "Product not found")
-		default:
-			log.Printf("Error while decode to go struct:%v\n", err)
-			return nil, errors.Wrap(err, "Error while querying db")
-		}
+		return nil, errors.Wrap(err, "Product not found")
 	}
-	return &product, nil
+
+	return product, nil
 }
 
 func SelectProducts(toSkip int64, amount int64, db *mongo.Database) ([]Product, error) {
