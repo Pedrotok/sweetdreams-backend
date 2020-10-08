@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/x/bsonx"
 	"golang.org/x/net/context"
@@ -68,7 +69,12 @@ func (app *App) Run(host string) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, os.Interrupt, os.Kill)
 	go func() {
-		log.Fatal(http.ListenAndServe(host, app.Router))
+		c := cors.New(cors.Options{
+			AllowedOrigins:   []string{"*"},
+			AllowCredentials: true,
+		})
+
+		log.Fatal(http.ListenAndServe(host, c.Handler(app.Router)))
 	}()
 	log.Printf("Server is listening on http://%s\n", host)
 	sig := <-sigs

@@ -72,8 +72,13 @@ func UpdateProduct(db *mongo.Database, res http.ResponseWriter, req *http.Reques
 		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Bad request")}
 	}
 
-	var params = mux.Vars(req)
-	oid, err := primitive.ObjectIDFromHex(params["id"])
+	id, ok := updateData["id"].(string)
+
+	if !ok {
+		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Bad request")}
+	}
+
+	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Bad request")}
 	}

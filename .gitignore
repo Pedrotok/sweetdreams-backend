@@ -16,3 +16,4 @@
 nap/cmd/nap/nap
 .vscode/
 
+__debug_bin

@@ -6,10 +6,12 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3 // indirect
 	github.com/go-delve/delve v1.5.0 // indirect
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/godef v1.1.2 // indirect
+	github.com/rs/cors v1.7.0
 	github.com/spf13/viper v1.7.1
 	go.mongodb.org/mongo-driver v1.4.1
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550

@@ -81,13 +81,13 @@ func UpdateProduct(id primitive.ObjectID, updateData map[string]interface{}, db 
 	update := bson.M{
 		"$set": updateData,
 	}
-	result, err := db.Collection("Product").UpdateOne(context.Background(), Product{ID: id}, update)
+	result, err := db.Collection("Product").UpdateOne(context.TODO(), bson.D{{Key: "_id", Value: id}}, update)
 	if err != nil {
 		log.Printf("Error while updating document: %v", err)
 		return errors.Wrap(err, "Error while updating document")
 	}
 	if result.MatchedCount != 1 {
-		return errors.Wrap(err, "product not found")
+		return errors.New("product not found")
 	}
 	return nil
 }
