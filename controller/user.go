@@ -25,7 +25,7 @@ func RegisterUser(db *mongo.Database, res http.ResponseWriter, req *http.Request
 		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Couldn't create user\n")}
 	}
 
-	return ResponseWriter(res, http.StatusCreated, "User created", nil)
+	return ResponseWriter(res, http.StatusCreated, "User created\n", nil)
 }
 
 func Authenticate(db *mongo.Database, res http.ResponseWriter, req *http.Request) error {
@@ -42,12 +42,16 @@ func Authenticate(db *mongo.Database, res http.ResponseWriter, req *http.Request
 		return StatusError{http.StatusUnauthorized, errors.Wrap(err, "Couldn't authenticate user\n")}
 	}
 
-	token, err := util.GetToken(user.ID)
+	ts, err := util.CreateToken(user.ID)
 
 	if err != nil {
-		return StatusError{http.StatusUnauthorized, errors.Wrap(err, "Couldn't authenticate user\n")}
+		return StatusError{http.StatusUnauthorized, errors.Wrap(err, "Couldn't create token\n")}
 	}
 
-	res.Header().Set("Authorization", "Bearer "+token)
-	return ResponseWriter(res, http.StatusOK, "", token)
+	tokens := map[string]string{
+		"access_token":  ts.AccessToken,
+		"refresh_token": ts.RefreshToken,
+	}
+
+	return ResponseWriter(res, http.StatusCreated, "", tokens)
 }

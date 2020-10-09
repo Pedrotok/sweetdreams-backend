@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/gin-gonic/gin v1.6.3 // indirect
+	github.com/gin-gonic/gin v1.6.3
 	github.com/go-delve/delve v1.5.0 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
@@ -13,6 +13,7 @@ require (
 	github.com/rogpeppe/godef v1.1.2 // indirect
 	github.com/rs/cors v1.7.0
 	github.com/spf13/viper v1.7.1
+	github.com/twinj/uuid v1.0.0
 	go.mongodb.org/mongo-driver v1.4.1
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2

@@ -61,6 +61,8 @@ func (app *App) setRouters() {
 
 	app.post("/user/authenticate", app.handleRequest(controller.Authenticate))
 	app.post("/user/register", app.handleRequest(controller.RegisterUser))
+
+	app.post("/token/refresh", app.handleRequest(controller.RefreshToken))
 }
 
 // Run will start the http server on host that you pass in. host:<ip:port>

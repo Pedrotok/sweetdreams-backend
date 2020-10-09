@@ -6,5 +6,6 @@
     "Name": "SweetDreamsDB"
   },
   "ServerHost": "localhost:8080",
-  "JwtKey": "key"
+  "JwtAccessKey": "JwtAccessKey",
+  "JwtRefreshKey": "JwtRefreshKey"
 }

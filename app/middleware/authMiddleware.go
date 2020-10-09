@@ -5,7 +5,6 @@ import (
 	"SweetDreams/util"
 
 	"net/http"
-	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,27 +14,27 @@ import (
 func AuthMiddleware(db *mongo.Database, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		tokenString := r.Header.Get("Authorization")
+		tokenString := util.ExtractTokenString(r)
 		if len(tokenString) == 0 {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Missing Authorization Header"))
 			return
 		}
-		tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
-		claims, err := util.VerifyToken(tokenString)
+
+		token, err := util.GetToken(tokenString, util.Access)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Error verifying JWT token: " + err.Error()))
 			return
 		}
 
-		userId := claims.(jwt.MapClaims)["ID"].(string)
+		userId := token.Claims.(jwt.MapClaims)["ID"].(string)
 
 		oid, err := primitive.ObjectIDFromHex(userId)
 
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("User not found"))
+			w.Write([]byte("Problem parsing user id"))
 			return
 		}
 
