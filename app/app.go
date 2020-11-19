@@ -74,6 +74,7 @@ func (app *App) Run(host string) {
 		c := cors.New(cors.Options{
 			AllowedOrigins:   []string{"*"},
 			AllowCredentials: true,
+			AllowedHeaders:   []string{"*"},
 		})
 
 		log.Fatal(http.ListenAndServe(host, c.Handler(app.Router)))

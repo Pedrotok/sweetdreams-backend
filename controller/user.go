@@ -48,10 +48,11 @@ func Authenticate(db *mongo.Database, res http.ResponseWriter, req *http.Request
 		return StatusError{http.StatusUnauthorized, errors.Wrap(err, "Couldn't create token\n")}
 	}
 
-	tokens := map[string]string{
+	response := map[string]interface{}{
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
+		"user_data":     user,
 	}
 
-	return ResponseWriter(res, http.StatusCreated, "", tokens)
+	return ResponseWriter(res, http.StatusCreated, "", response)
 }
