@@ -5,4 +5,5 @@ type CreateProductRequest struct {
 	Price       float64
 	Description string
 	ImageUrl    string
+	Sizes       []string
 }

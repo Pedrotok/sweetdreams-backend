@@ -13,9 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// results count per page
-var limit int64 = 10
-
 func CreateProduct(db *mongo.Database, res http.ResponseWriter, req *http.Request) error {
 	request := new(controller.CreateProductRequest)
 	err := json.NewDecoder(req.Body).Decode(request)
@@ -23,7 +20,7 @@ func CreateProduct(db *mongo.Database, res http.ResponseWriter, req *http.Reques
 		return StatusError{http.StatusBadRequest, errors.Wrap(err, "Failed to decode request")}
 	}
 
-	_, err = model.CreateProduct(request.Name, request.Price, request.Description, request.ImageUrl, db)
+	_, err = model.CreateProduct(request.Name, request.Price, request.Description, request.ImageUrl, request.Sizes, db)
 
 	if err != nil {
 		return err
@@ -51,6 +48,7 @@ func GetProduct(db *mongo.Database, res http.ResponseWriter, req *http.Request) 
 func GetAllProducts(db *mongo.Database, res http.ResponseWriter, req *http.Request) error {
 	pageString := req.FormValue("page")
 	page, err := strconv.ParseInt(pageString, 10, 64)
+	var limit int64 = 10
 	if err != nil {
 		page = 0
 		limit = 1e9

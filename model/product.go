@@ -17,14 +17,17 @@ type Product struct {
 	Price       float64            `json:"price" bson:"price"`
 	Description string             `json:"description" bson:"description"`
 	ImageUrl    string             `json:"imageUrl" bson:"imageUrl"`
+	Sizes       []string           `json:"sizes" bson:"sizes"`
 }
 
-func CreateProduct(name string, price float64, description string, imageUrl string, db *mongo.Database) (*Product, error) {
+func CreateProduct(name string, price float64, description string,
+	imageUrl string, sizes []string, db *mongo.Database) (*Product, error) {
 	product := &Product{
 		Name:        name,
 		Price:       price,
 		Description: description,
 		ImageUrl:    imageUrl,
+		Sizes:       sizes,
 	}
 
 	result, err := db.Collection("Product").InsertOne(context.TODO(), product)

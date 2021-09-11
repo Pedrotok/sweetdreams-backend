@@ -52,8 +52,8 @@ func (app *App) createIndexes() {
 // SetupRouters will register routes in router
 func (app *App) setRouters() {
 
-	app.post("/product", middleware.AuthMiddleware(app.DB, app.handleRequest(controller.CreateProduct)))
-	app.put("/product", middleware.AuthMiddleware(app.DB, app.handleRequest(controller.UpdateProduct)))
+	app.post("/product", app.handleRequest(controller.CreateProduct))
+	app.put("/product", app.handleRequest(controller.UpdateProduct))
 	app.get("/product/{id}", app.handleRequest(controller.GetProduct))
 	//app.delete("/product", app.handleRequest(controller.DeleteProduct))
 	app.get("/product", app.handleRequest(controller.GetAllProducts))
