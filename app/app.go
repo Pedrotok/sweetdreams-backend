@@ -62,6 +62,10 @@ func (app *App) setRouters() {
 	app.post("/user/authenticate", app.handleRequest(controller.Authenticate))
 	app.post("/user/register", app.handleRequest(controller.RegisterUser))
 
+	// TODO remove this endpoint
+	app.get("/user", app.handleRequest(controller.GetAllUsers))
+	app.get("/user", app.handleRequest(controller.GetAllUsers), "page", "{page}")
+
 	app.post("/token/refresh", app.handleRequest(controller.RefreshToken))
 }
 

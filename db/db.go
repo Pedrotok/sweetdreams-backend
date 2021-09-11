@@ -32,6 +32,6 @@ func SetIndexes(collection *mongo.Collection, keys bsonx.Doc) {
 	opts := options.CreateIndexes().SetMaxTime(10 * time.Second)
 	_, err := collection.Indexes().CreateOne(context.Background(), index, opts)
 	if err != nil {
-		log.Fatalf("Error while creating indexs: %v", err)
+		log.Fatalf("Error while creating indexes: %v", err)
 	}
 }

@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"strconv"
+
 	controller "SweetDreams/controller/requestModel"
 	"SweetDreams/model"
 	"SweetDreams/util"
@@ -55,4 +57,22 @@ func Authenticate(db *mongo.Database, res http.ResponseWriter, req *http.Request
 	}
 
 	return ResponseWriter(res, http.StatusCreated, "", response)
+}
+
+func GetAllUsers(db *mongo.Database, res http.ResponseWriter, req *http.Request) error {
+	pageString := req.FormValue("page")
+	page, err := strconv.ParseInt(pageString, 10, 64)
+	var limit int64 = 10
+	if err != nil {
+		page = 0
+		limit = 1e9
+	}
+
+	users, err := model.SelectUsers(page*limit, limit, db)
+
+	if err != nil {
+		return StatusError{http.StatusNotFound, errors.Wrap(err, "Can't query users")}
+	}
+
+	return ResponseWriter(res, http.StatusOK, "", users)
 }

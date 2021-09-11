@@ -2,11 +2,13 @@ package model
 
 import (
 	"context"
+	"log"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -67,6 +69,32 @@ func SelectUserById(id primitive.ObjectID, db *mongo.Database) (*User, error) {
 	}
 
 	return user, nil
+}
+
+func SelectUsers(toSkip int64, amount int64, db *mongo.Database) ([]User, error) {
+	var users []User
+
+	findOptions := options.FindOptions{
+		Skip: &toSkip,
+		Limit: &amount,
+		Sort: bson.M{
+			"_id": -1,
+		},
+	}
+
+	curser, err := db.Collection("User").Find(context.TODO(), bson.M{}, &findOptions)
+	if err != nil {
+		log.Printf("Error while quering collection: %v\n", err)
+		return nil, errors.Wrap(err, "Error  while reading data")
+	}
+
+	err = curser.All(context.Background(), &users)
+	if err != nil {
+		log.Fatalf("Error in curser: %v", err)
+		return nil, errors.Wrap(err, "Error  while reading data")
+	}
+
+	return users, nil
 }
 
 func validatePassword(password string) error {
