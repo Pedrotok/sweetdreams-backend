@@ -1,0 +1,10 @@
+{
+    "update": "Product",
+    "updates": [
+        {
+            "q": {},
+            "u": { "$set": { "sizes": ["S", "M", "L"] } },
+            "multi": true
+        }
+    ]
+}
