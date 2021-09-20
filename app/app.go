@@ -67,6 +67,8 @@ func (app *App) setRouters() {
 	app.get("/user", app.handleRequest(controller.GetAllUsers), "page", "{page}")
 
 	app.post("/token/refresh", app.handleRequest(controller.RefreshToken))
+
+	app.get("/service/getDeliveryInfo", app.handleRequest(controller.GetDeliveryInfo), "cep", "{cep}", "amount", "{amount}")
 }
 
 // Run will start the http server on host that you pass in. host:<ip:port>
