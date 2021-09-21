@@ -3,10 +3,8 @@ package utils
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"time"
 )
 
@@ -62,12 +60,6 @@ func soapCall(ws string, action string, payloadInterface interface{}) ([]byte, e
 	req.Header.Set("SOAPAction", action)
 	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
 
-	dump, err := httputil.DumpRequestOut(req, true)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Printf("%q", dump)
-
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -78,7 +70,6 @@ func soapCall(ws string, action string, payloadInterface interface{}) ([]byte, e
 		return nil, err
 	}
 
-	fmt.Println(string(bodyBytes))
 	defer response.Body.Close()
 	return bodyBytes, nil
 }
