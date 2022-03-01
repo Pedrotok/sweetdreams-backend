@@ -16,6 +16,7 @@ import (
 
 	middleware "SweetDreams/app/middleware"
 	"SweetDreams/config"
+	"SweetDreams/constants"
 	"SweetDreams/controller"
 	"SweetDreams/db"
 )
@@ -45,7 +46,7 @@ func (app *App) createIndexes() {
 	keys := bsonx.Doc{
 		{Key: "email", Value: bsonx.Int32(1)},
 	}
-	users := app.DB.Collection("User")
+	users := app.DB.Collection(constants.Users)
 	db.SetIndexes(users, keys)
 }
 

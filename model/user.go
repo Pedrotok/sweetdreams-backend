@@ -1,6 +1,7 @@
 package model
 
 import (
+	"SweetDreams/constants"
 	"context"
 	"log"
 
@@ -33,7 +34,7 @@ func CreateUser(email string, password string, db *mongo.Database) (*User, error
 	user.Email = email
 	user.Password = hash
 
-	result, err := db.Collection("User").InsertOne(context.TODO(), user)
+	result, err := db.Collection(constants.Users).InsertOne(context.TODO(), user)
 	if err != nil {
 		switch err.(type) {
 		case mongo.WriteException:
@@ -49,7 +50,7 @@ func CreateUser(email string, password string, db *mongo.Database) (*User, error
 
 func AuthenticateUser(email string, password string, db *mongo.Database) (*User, error) {
 	user := new(User)
-	err := db.Collection("User").FindOne(context.TODO(), bson.D{{Key: "email", Value: email}}).Decode(user)
+	err := db.Collection(constants.Users).FindOne(context.TODO(), bson.D{{Key: "email", Value: email}}).Decode(user)
 	if err != nil {
 		return nil, errors.Wrap(err, "User with email not found")
 	}
@@ -63,7 +64,7 @@ func AuthenticateUser(email string, password string, db *mongo.Database) (*User,
 
 func SelectUserById(id primitive.ObjectID, db *mongo.Database) (*User, error) {
 	user := new(User)
-	err := db.Collection("User").FindOne(context.TODO(), bson.D{{Key: "_id", Value: id}}).Decode(user)
+	err := db.Collection(constants.Users).FindOne(context.TODO(), bson.D{{Key: "_id", Value: id}}).Decode(user)
 	if err != nil {
 		return nil, errors.Wrap(err, "User not found")
 	}
@@ -75,14 +76,14 @@ func SelectUsers(toSkip int64, amount int64, db *mongo.Database) ([]User, error)
 	var users []User
 
 	findOptions := options.FindOptions{
-		Skip: &toSkip,
+		Skip:  &toSkip,
 		Limit: &amount,
 		Sort: bson.M{
 			"_id": -1,
 		},
 	}
 
-	curser, err := db.Collection("User").Find(context.TODO(), bson.M{}, &findOptions)
+	curser, err := db.Collection(constants.Users).Find(context.TODO(), bson.M{}, &findOptions)
 	if err != nil {
 		log.Printf("Error while quering collection: %v\n", err)
 		return nil, errors.Wrap(err, "Error  while reading data")

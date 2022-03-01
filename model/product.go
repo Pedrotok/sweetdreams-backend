@@ -1,6 +1,7 @@
 package model
 
 import (
+	"SweetDreams/constants"
 	"context"
 	"log"
 
@@ -30,7 +31,7 @@ func CreateProduct(name string, price float64, description string,
 		Sizes:       sizes,
 	}
 
-	result, err := db.Collection("Product").InsertOne(context.TODO(), product)
+	result, err := db.Collection(constants.Products).InsertOne(context.TODO(), product)
 	if err != nil {
 		switch err.(type) {
 		case mongo.WriteException:
@@ -46,7 +47,7 @@ func CreateProduct(name string, price float64, description string,
 
 func SelectProductById(id primitive.ObjectID, db *mongo.Database) (*Product, error) {
 	product := new(Product)
-	err := db.Collection("Product").FindOne(context.TODO(), bson.D{{Key: "_id", Value: id}}).Decode(product)
+	err := db.Collection(constants.Products).FindOne(context.TODO(), bson.D{{Key: "_id", Value: id}}).Decode(product)
 	if err != nil {
 		return nil, errors.Wrap(err, "Product not found")
 	}
@@ -65,7 +66,7 @@ func SelectProducts(toSkip int64, amount int64, db *mongo.Database) ([]Product, 
 		},
 	}
 
-	curser, err := db.Collection("Product").Find(context.TODO(), bson.M{}, &findOptions)
+	curser, err := db.Collection(constants.Products).Find(context.TODO(), bson.M{}, &findOptions)
 	if err != nil {
 		log.Printf("Error while quering collection: %v\n", err)
 		return nil, errors.Wrap(err, "Error  while reading data")
@@ -84,7 +85,7 @@ func UpdateProduct(id primitive.ObjectID, updateData map[string]interface{}, db 
 	update := bson.M{
 		"$set": updateData,
 	}
-	result, err := db.Collection("Product").UpdateOne(context.TODO(), bson.D{{Key: "_id", Value: id}}, update)
+	result, err := db.Collection(constants.Products).UpdateOne(context.TODO(), bson.D{{Key: "_id", Value: id}}, update)
 	if err != nil {
 		log.Printf("Error while updating document: %v", err)
 		return errors.Wrap(err, "Error while updating document")
