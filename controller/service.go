@@ -24,32 +24,42 @@ func GetDeliveryInfo(db *mongo.Database, res http.ResponseWriter, req *http.Requ
 		return StatusError{http.StatusBadRequest, errors.Wrap(err, "invalid amount")}
 	}
 
-	soapRequest := &controller.CalcPriceDeadlineRequest{
-		XMLNs:            "http://tempuri.org/",
-		Empresa:          "",
-		Senha:            "",
-		Servico:          "04510",
-		CepOrigem:        "70232090",
-		CepDestino:       cep,
-		Peso:             "1",
-		Formato:          1,
-		Comprimento:      45,
-		Largura:          45,
-		Altura:           15,
-		Diametro:         45,
-		MaoPropria:       "N",
-		ValorDeclarado:   0,
-		AvisoRecebimento: "S",
-	}
+	deliveryTypes := []string{utils.PAC, utils.SEDEX}
+	var resp []responseModel.DeliveryInfoResponse
 
-	var calcPriceDeadlineResponse responseModel.CalcPriceDeadlineResponse
-	err = utils.SoapCallHandleResponse("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx",
-		"http://tempuri.org/CalcPrecoPrazo", soapRequest, &calcPriceDeadlineResponse)
-	if err != nil {
-		return StatusError{http.StatusInternalServerError, errors.Wrap(err, "Soap call error")}
-	}
+	for _, deliveryType := range deliveryTypes {
+		soapRequest := &controller.CalcPriceDeadlineRequest{
+			XMLNs:            "http://tempuri.org/",
+			Empresa:          "",
+			Senha:            "",
+			Servico:          deliveryType,
+			CepOrigem:        "70232090",
+			CepDestino:       cep,
+			Peso:             "1",
+			Formato:          1,
+			Comprimento:      45,
+			Largura:          45,
+			Altura:           15,
+			Diametro:         45,
+			MaoPropria:       "N",
+			ValorDeclarado:   0,
+			AvisoRecebimento: "S",
+		}
 
-	resp, err := parsePriceDeadlineResponse(calcPriceDeadlineResponse)
+		var calcPriceDeadlineResponse responseModel.CalcPriceDeadlineResponse
+		err = utils.SoapCallHandleResponse("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx",
+			"http://tempuri.org/CalcPrecoPrazo", soapRequest, &calcPriceDeadlineResponse)
+		if err != nil {
+			return StatusError{http.StatusInternalServerError, errors.Wrap(err, "Soap call error")}
+		}
+
+		result, err := parsePriceDeadlineResponse(calcPriceDeadlineResponse)
+
+		if err != nil {
+			return err
+		}
+		resp = append(resp, *result)
+	}
 
 	return ResponseWriter(res, http.StatusOK, "", resp)
 }
@@ -60,10 +70,10 @@ func parsePriceDeadlineResponse(data responseModel.CalcPriceDeadlineResponse) (*
 		return nil, errors.New("Correios didn't return any services")
 	}
 
-	msgError := services[0].MsgErro
-	if msgError != "" {
-		return nil, errors.New(msgError)
-	}
+	// msgError := services[0].MsgErro
+	// if msgError != "" {
+	// 	return nil, errors.New(msgError)
+	// }
 
 	deliveryInfoResponse := &responseModel.DeliveryInfoResponse{
 		DeliveryType: getDeliveryTypeFromCode(services[0].Codigo),
@@ -74,9 +84,9 @@ func parsePriceDeadlineResponse(data responseModel.CalcPriceDeadlineResponse) (*
 }
 
 func getDeliveryTypeFromCode(code string) string {
-	if code == "4510" {
+	if code == utils.PAC {
 		return "PAC"
-	} else if code == "4014" {
+	} else if code == utils.SEDEX {
 		return "SEDEX"
 	}
 
